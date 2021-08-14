@@ -74,7 +74,7 @@ await fetch("https://api.yoursite.com/purchase", {
 
 ## Why
 
-Currently, big cloud security companies have a monopoly on fingerprinting methods used to analyze traffic and even though the data collection methods are open source, they don't the data itself with their customers in order to feed the data into their ML models to sell expensive bot protection services.
+Currently, big cloud security companies have a monopoly on fingerprinting methods used to analyze traffic and even though the data collection methods are open source, they don't expose the data itself to their customers in order to feed the data into their ML models to sell expensive bot protection services.
 
 This information should be easily accessible for all site owners to deal with unwanted traffic without paying thousands of dollars. Of course, this isn't a replacement for Cloudflare's enterprise bot protection by any means, but it helps raise the bar.
 
