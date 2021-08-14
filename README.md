@@ -49,12 +49,12 @@ Example response
 ```
 
 ```
-Nonce (24 bytes)         | Encrypted Payload
+Nonce (12 bytes)         | Encrypted Payload
 -------------------------|-------------------------------
 sOS97Zf8E0BI5gkEHRNk243G | 💃 🍋 💴 🙂 🕵 😷 💝 🔗 📦 🍰
 ```
 
-The first 24 bytes of the message should be sliced out as the nonce to decrypt the encrypted payload with the shared secret.
+The first 12 bytes of the message should be sliced out as the nonce to decrypt the encrypted payload with the shared secret.
 
 The submitted nonce must be checked for uniqueness in order to prevent replay attacks.
 
@@ -70,6 +70,37 @@ await fetch("https://api.yoursite.com/purchase", {
   },
   body: JSON.stringify(...)
 });
+```
+
+### Decoding the Response in Node.js
+
+```js
+const crypto = require('crypto')
+
+const key = Buffer.from('256-bit-shared-secret')
+const response = Buffer.from(base64Response, 'base64')
+
+let nonce = response.slice(0, 12)
+let ciphertext = response.slice(12)
+
+const decipher = crypto.createDecipheriv('ChaCha20-Poly1305', ciphertext, nonce, {
+  authTagLength: 16
+})
+
+let out = decipher.update(text)
+let payload;
+
+try {
+  decipher.final()
+  // slicing out the mac at the end
+  payload = out.slice(0, -16)
+} catch (err) {
+  console.log('someone messed with the signature/encryption')
+}
+
+if (payload) {
+  console.log(JSON.parse(payload))
+}
 ```
 
 ## Why
@@ -90,11 +121,10 @@ Requests made to odd eye are only a single GET request. Browsers like Firefox wh
 
 In theory, to get around this, a client should be able to try loading multiple resources from the fingerprinting server at the same time to normalize the browser inconsistencies. I haven't been able to get this behavior to work though.
 
-#### HTTP2 
+#### Client support
 Clients that don't support http2 can only receive limited fingerprint information. This should be taken into account when analyzing fingerprints on the service-side.
 
-#### TLS 
-All connecting clients must support TLS. This is already something that should be enforced, but can make testing a little more tedious working with self-signed certificates.
+All connecting clients must also support TLS. This is already something that should be enforced, but can make testing a little more tedious working with self-signed certificates.
 
 #### Reliability
 None of these metrics are a silver bullet to detecting bots. There are going to be plenty of false positives as browsers change their behaviors and false negatives as your site becomes a bigger target for the red team (👋). Fingerprinting is just a piece of the abuse detection puzzle. The goal is to make automation as frustrating and expensive as possible, not impossible.
