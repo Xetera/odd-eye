@@ -6,7 +6,7 @@ use axum::{
 };
 use chacha20poly1305::{
     aead::{Aead, NewAead},
-    XChaCha20Poly1305, XNonce,
+    ChaCha20Poly1305, Nonce,
 };
 use rand::{thread_rng, RngCore};
 use serde;
@@ -15,7 +15,7 @@ use std::{iter::FromIterator, net::SocketAddr, sync::Arc, time::SystemTime};
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
 
 struct State {
-    aead: XChaCha20Poly1305,
+    aead: ChaCha20Poly1305,
 }
 
 const ENCRYPTION_KEY_NAME: &'static str = "ODD_EYE_ENCRYPTION_KEY";
@@ -36,7 +36,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let state = Arc::new(State {
-        aead: XChaCha20Poly1305::new_from_slice(key_bytes).unwrap(),
+        aead: ChaCha20Poly1305::new_from_slice(key_bytes).unwrap(),
     });
     let mut app = route("/", get(root))
         .route("/b64", get(base64_route))
@@ -67,11 +67,11 @@ fn unwrap_header(header: HeaderValue) -> String {
 
 type FingerprintResponse = Result<Vec<u8>, chacha20poly1305::aead::Error>;
 
-fn encrypt_fingerprint(fp: Fingerprint, aead: &XChaCha20Poly1305) -> FingerprintResponse {
+fn encrypt_fingerprint(fp: Fingerprint, aead: &ChaCha20Poly1305) -> FingerprintResponse {
     let mut rng = thread_rng();
-    let mut nonce_bytes = [0u8; 24];
+    let mut nonce_bytes = [0u8; 12];
     rng.fill_bytes(&mut nonce_bytes);
-    let nonce = XNonce::from_slice(&nonce_bytes);
+    let nonce = Nonce::from_slice(&nonce_bytes);
 
     println!("{:?}", &fp);
     let payload = serde_json::to_string(&fp).unwrap();

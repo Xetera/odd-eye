@@ -17,7 +17,7 @@
 
 Odd eye is a standalone fingerprinting server that lives separate from the rest of your infrastructure and turns low-level information about the connections it receives into tokens that can be checked to expose bots that are lying about their identity.
 
-Collected fingerprints are encrypted using **XChaCha20-Poly1305** with a symmetric key shared across your services before being returned to the caller. This fingerprint can be sent to any other service in your infrastructure without worrying about modifying the reverse proxy in front of the APIs that need fingerprint information, as bots will be forced to hand over their real identity to make successful requests.
+Collected fingerprints are encrypted using **ChaCha20-Poly1305** with a symmetric key shared across your services before being returned to the caller. This fingerprint can be sent to any other service in your infrastructure without worrying about modifying the reverse proxy in front of the APIs that need fingerprint information, as bots will be forced to hand over their real identity to make successful requests.
 
 ## Usage
 
@@ -97,5 +97,9 @@ Clients that don't support http2 can only receive limited fingerprint informatio
 All connecting clients must support TLS. This is already something that should be enforced, but can make testing a little more tedious working with self-signed certificates.
 
 #### Reliability
-
 None of these metrics are a silver bullet to detecting bots. There are going to be plenty of false positives as browsers change their behaviors and false negatives as your site becomes a bigger target for the red team (👋). Fingerprinting is just a piece of the abuse detection puzzle. The goal is to make automation as frustrating and expensive as possible, not impossible.
+
+#### Encryption
+The encryption scheme uses ChaCha20-Poly1305 with a random nonce which is technically not secure because of collisions. Sue me.
+
+XChaCha, which has a large enough nonce length to make random generation secure, is not standardized as of writing this and very few libraries support decryption for it including big ones like openssl.
