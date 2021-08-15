@@ -1,0 +1,3 @@
+[submodule "nginx"]
+	path = nginx
+	url = git@github.com:Xetera/nginx-ssl-ja3.git
