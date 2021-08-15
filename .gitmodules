@@ -1,3 +1,0 @@
-[submodule "nginx"]
-  path = nginx
-  url = git@github.com:foo/bar.git
